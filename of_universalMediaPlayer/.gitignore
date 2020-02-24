@@ -79,7 +79,3 @@ Desktop.ini
 
 # Android
 .csettings
-*.pbxproj
-*.xcscheme
-*.xcconfig
-*.plist
