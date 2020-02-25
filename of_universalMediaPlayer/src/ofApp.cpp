@@ -60,17 +60,8 @@ void ofApp::update(){
         
     }else{
         
-        bool endOfFile = video->update();
-        if(endOfFile){
-            if (video->autoNext )
-            {
-                error.setCurrentInfo("Update : end of movie - jump next");
-                video->goNext();
-            }
-            else if(video->getIsPlaying()){
-                video->stop();
-            }
-        }
+        video->update();
+
     }
     
 

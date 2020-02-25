@@ -73,7 +73,7 @@ void vidPlayer::init(){
 //------------------------------------------------------
 //                      UPDATE
 //------------------------------------------------------
-bool vidPlayer::update(){
+void vidPlayer::update(){
 
     //FIRST UPDATE PLAYER AND CHECK IS FILE IS ENDED
     bool endOfFile;

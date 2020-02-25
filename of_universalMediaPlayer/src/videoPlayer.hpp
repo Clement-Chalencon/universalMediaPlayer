@@ -27,7 +27,7 @@ public :
     void init();
     
     // CLINIC FUNCTION
-    bool update();
+    void update();
     void draw(int dark);
     void drawMini(int w, int h);
     bool isOMXPlayer;
