@@ -409,7 +409,7 @@ void ofApp::scanVideoFiles(){
     string rootDir;
     int usbKeyIndex;
     #ifdef __arm__
-    rootdir = "/media/pi";
+    rootDir = "/media/pi";
     usbKeyIndex = 0;
     #else
     rootDir ="/Volumes";
