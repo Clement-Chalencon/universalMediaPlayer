@@ -103,7 +103,6 @@ void ofApp::draw(){
     ofBackground(0);
     
     //DRAW VIDEO IN AVERAGE COLOR, CALCULATE, SEND OVER OSC
-
     if(average.isActivated ){
         average.fboBegin();
         ofSetColor(255);

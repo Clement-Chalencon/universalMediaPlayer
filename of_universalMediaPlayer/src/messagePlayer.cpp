@@ -96,35 +96,25 @@ void messagePlayer::clear(){
 //------------------------------------------------
 void messagePlayer::draw(){
     
+    //TODO : never change video luminosity, but can add a grey filter on top of the video, then draw message.
+    
     if(display){
 
         float timeFromFade = ofGetElapsedTimef() - timeToFade;
-
         //FADING IN
         if(timeFromFade < fadeInDuration){
-
             float percentage = timeFromFade/fadeInDuration;
             alpha = 255*percentage;
-
         }
-
-
 
     }else{
 
         float timeFromFade = ofGetElapsedTimef() - timeToFade;
-
         //FADING OUT
         if(timeFromFade < fadeOutDuration){
-
             float percentage = 1.0 - (timeFromFade/fadeOutDuration);
             alpha = 255*percentage;
-
         }
-
-
-        
-
 
     }
     

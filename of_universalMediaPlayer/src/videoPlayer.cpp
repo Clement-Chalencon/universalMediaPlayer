@@ -96,8 +96,11 @@ void vidPlayer::update(){
     if(endOfFile  ){
         if (autoNext )
         {
-            error->setCurrentInfo("Update : end of movie - jump next");
-            goNext();
+            if(isPlaying){
+                error->setCurrentInfo("Update : end of movie - jump next");
+                goNext();
+            }
+            
         }
         else if(getIsPlaying()){
             stop();

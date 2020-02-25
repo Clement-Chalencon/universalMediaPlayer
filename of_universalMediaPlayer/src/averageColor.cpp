@@ -22,7 +22,7 @@ averageColor::averageColor(){
     
     colorSmooth = 0.035;
     
-    isActivated = true;
+    isActivated = false;
     isDraw = false;
 }
 
