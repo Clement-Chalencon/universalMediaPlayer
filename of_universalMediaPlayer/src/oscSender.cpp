@@ -22,6 +22,13 @@ void oscSender::send(string ad, int num){
     sender.sendMessage(m, false);
 }
 
+void oscSender::send(string ad, string word){
+    ofxOscMessage m;
+    m.setAddress(ad);
+    m.addStringArg(word);
+    sender.sendMessage(m, false);
+}
+
 
 void oscSender::send(string ad, float f1, float f2, float f3){
     

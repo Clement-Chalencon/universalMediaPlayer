@@ -28,7 +28,7 @@ class timeCode{
     int index;
     ofxCsv csv;
     vector<int> listOfFrame;
-    vector<int> listOfMemory;
+    vector<string> listOfMemory;
     oscSender* oscsender;
     
 };

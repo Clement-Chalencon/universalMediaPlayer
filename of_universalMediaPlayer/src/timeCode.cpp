@@ -35,7 +35,7 @@ void timeCode::loadFile(string f){
                  for(int i = 0; i < csv.getNumRows(); i++) {
                      
                      listOfFrame.push_back(ofToInt(csv[i][0]));
-                     listOfMemory.push_back(ofToInt(csv[i][1]));
+                     listOfMemory.push_back(csv[i][1]);
                      index = 0;
 
                  }
@@ -98,7 +98,7 @@ void timeCode::printTimeCode(){
     for(int i=0; i<listOfFrame.size(); i++){
         if(i == index) ofSetColor(ofColor::red);
         else ofSetColor(255);
-        ofDrawBitmapString(ofToString(i)+") "+ofToString(listOfFrame[i])+ " :: "+ofToString(listOfMemory[i]), 20, ofGetHeight()*0.75 + i*12);
+        ofDrawBitmapString(ofToString(i)+") "+ofToString(listOfFrame[i])+ " :: "+listOfMemory[i], 20, ofGetHeight()*0.75 + i*12);
         
     }
     
