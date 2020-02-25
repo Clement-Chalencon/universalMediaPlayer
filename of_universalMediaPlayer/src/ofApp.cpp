@@ -223,7 +223,15 @@ void ofApp::processOscMessage(ofxOscMessage m){
             if(splitted[1] == "vflip"){
                 int vflip = m.getArgAsFloat(0);
                 video->flipV = (vflip > 0);
+                video->calculateGeometry();
                 toPrint +="set Vflip: "+ofToString(vflip);
+            }
+            //Horizontal Flip
+            if(splitted[1] == "hflip"){
+                int hflip = m.getArgAsFloat(0);
+                video->flipH = (hflip > 0);
+                video->calculateGeometry();
+                toPrint +="set Hflip: "+ofToString(hflip);
             }
             //LOAD A FILE -- and add to playlist -- and play it
             if(splitted[1] == "load"){
@@ -424,19 +432,25 @@ void ofApp::scanVideoFiles(){
         }
         if(usbKeyName.size()>0){
             usbKeyInserted = true;
-            folder.open(usbKeyName);
-            folder.allowExt("mp4");
-            folder.allowExt("mov");
-            folder.allowExt("MOV");
-            folder.listDir();
-            bool isExist = folder.exists();
-            for(int i = 0; i < folder.listDir(); i++){
-                cout << "FILE : "+folder.getPath(i)+"\n";
+            ofDirectory folderKey;
+            folderKey.open(usbKeyName);
+            folderKey.allowExt("mp4");
+            folderKey.allowExt("mov");
+            folderKey.allowExt("MOV");
+            ofSleepMillis(400);
+
+            if( !folderKey.canRead()){
+                usbKeyInserted = false;
+                return;
+            }
+            folderKey.listDir();
+            for(int i = 0; i < folderKey.listDir(); i++){
+                cout << "FILE : "+folderKey.getPath(i)+"\n";
                 if(i==0){
-                    video->loadFile(folder.getPath(i));
+                    video->loadFile(folderKey.getPath(i));
                 }
                 else{
-                    video->addFile(folder.getPath(i));
+                    video->addFile(folderKey.getPath(i));
                 }
             }
         }

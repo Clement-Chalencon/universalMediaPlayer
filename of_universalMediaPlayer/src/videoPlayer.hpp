@@ -90,6 +90,7 @@ public :
     float playerW;
     float playerH;
     bool flipV;
+    bool flipH;
     
     
     //OF Video Player

@@ -49,8 +49,6 @@ void vidPlayer::init(){
     isOMXPlayer = false;
 #endif
     
-    
-    
     //GEOMETRY
     videoWidth = 0;
     videoHeight = 0;
@@ -59,15 +57,13 @@ void vidPlayer::init(){
     screenHeight = ofGetHeight();
     screenRatio = screenWidth/screenHeight;
     flipV = false;
-    
-
+    flipH = false;
     
     //TIMECODE
     actualFrame = 0;
     time = timeCode();
     
 }
-
 
 
 //------------------------------------------------------
@@ -130,21 +126,12 @@ void vidPlayer::draw( int darkPercentage){
 #ifdef RADIOLOGIC_OMX
         if(player.getIsOpen()&& getIsPlaying())
         {
-            if(!flipV){
                 player.draw(playerX, playerY, playerW, playerH);
-            }else{
-                player.draw(playerX, playerY + playerH, playerW, -playerH);
-            }
-            
         }
 #else
         if(player.isLoaded() && getIsPlaying())
         {
-            if(!flipV){
                 player.draw(playerX, playerY, playerW, playerH);
-            }else{
-                player.draw(playerX, playerY + playerH, playerW, -playerH);
-            }
         }
 #endif
         else{
@@ -164,10 +151,7 @@ void vidPlayer::draw( int darkPercentage){
             ofPopMatrix();
             // ofDrawBitmapStringHighlight("Selectionner un film", ofGetWidth()/2, ofGetHeight()/2);
         }
-
-        
-
-        
+   
     }
 
     
@@ -572,15 +556,32 @@ void vidPlayer::calculateGeometry(){
     
     
     //CONSIDER THAT THE FINAL WIDTH IS THE SCREEN WIDTH
-    playerW = screenWidth;
+    float originalPlayerW = screenWidth;
     // if ZOOM > 1  : screen is bigger than video
     float zoom = screenWidth/videoWidth;
-    playerH = (videoWidth/videoRatio)*zoom;
+    float originalPlayerH = (videoWidth/videoRatio)*zoom;
     
     //CONSIDERING THE PREVIOUS POINT
-    playerX = 0;
-    playerY = (screenHeight - playerH) / 2.0f;
+    float originalPlayerX = 0;
+    float originalPlayerY = (screenHeight - originalPlayerH) / 2.0f;
     
+    //Vertical mirror ( flipV )
+    if(flipV){
+        playerY = originalPlayerY + originalPlayerH;
+        playerH = -originalPlayerH;
+    }else{
+        playerY = originalPlayerY;
+        playerH = originalPlayerH;
+    }
+    
+    //Horizontal mirror ( flipH )
+    if(flipH){
+        playerX = originalPlayerX + originalPlayerW;
+        playerW = -originalPlayerW;
+    }else{
+        playerX = originalPlayerX;
+        playerW = originalPlayerW;
+    }
     
     
 }
