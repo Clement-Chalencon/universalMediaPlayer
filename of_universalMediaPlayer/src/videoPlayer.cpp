@@ -33,7 +33,7 @@ void vidPlayer::init(){
     doPrintFPS = false;
     doPrintOMXUse = false;
     doPrintFrame = false;
-    autoNext = false;
+    autoNext = true;
     
     //PAUSE
     pauseOnMessage = false;
@@ -58,6 +58,7 @@ void vidPlayer::init(){
     screenWidth = ofGetWidth();
     screenHeight = ofGetHeight();
     screenRatio = screenWidth/screenHeight;
+    flipV = false;
     
 
     
@@ -129,12 +130,21 @@ void vidPlayer::draw( int darkPercentage){
 #ifdef RADIOLOGIC_OMX
         if(player.getIsOpen()&& getIsPlaying())
         {
-            player.draw(playerX, playerY, playerW, playerH);
+            if(!flipV){
+                player.draw(playerX, playerY, playerW, playerH);
+            }else{
+                player.draw(playerX, playerY + playerH, playerW, -playerH);
+            }
+            
         }
 #else
         if(player.isLoaded() && getIsPlaying())
         {
-            player.draw(playerX, playerY, playerW, playerH);
+            if(!flipV){
+                player.draw(playerX, playerY, playerW, playerH);
+            }else{
+                player.draw(playerX, playerY + playerH, playerW, -playerH);
+            }
         }
 #endif
         else{
@@ -165,6 +175,11 @@ void vidPlayer::draw( int darkPercentage){
     // PRINT PLAYLIST
     if(doPrintPlaylist){
         printPlaylist();
+    }
+    
+    // PRINT TIMECODE
+    if(time.doPrintTimeCode){
+        time.printTimeCode();
     }
     
     // PRINT USE of OMX PLAYER
@@ -360,8 +375,8 @@ void vidPlayer::loadFile(string f){
                 playlistIndex = result;
             }
             
-            //NOT play directly, wait for play function
-           // playIndex(playlistIndex);
+            //play directly
+            playIndex(playlistIndex);
            
             
             
@@ -452,7 +467,7 @@ void vidPlayer::playIndex(int i){
         
         string name = playlist[i];
 
-#ifdef RADIOLOGIC_OMX
+#     ifdef RADIOLOGIC_OMX
         ofxOMXPlayerSettings settings;
         settings.videoPath = name;
         settings.useHDMIForAudio = false;    //default true
@@ -461,24 +476,26 @@ void vidPlayer::playIndex(int i){
         settings.enableAudio = true;        //default true, save resources by disabling
         player.setup(settings);
         isLoaded = player.getIsOpen();
-#else
+#     else
         player.load(name);
         isLoaded = player.isLoaded();
-#endif
+#     endif
         
         if( isLoaded){
             error-> setCurrentInfo("vidPlayer : playIndex: "+ofToString(playlistIndex));
             calculateGeometry();
-#ifdef RADIOLOGIC_OMX
+            string csvName = (ofSplitString(name, "."))[0]+".csv";
+            time.loadFile(csvName);
+#       ifdef RADIOLOGIC_OMX
             player.start();
             player.disableLooping();
             
-#else
+#       else
             player.setPixelFormat(OF_PIXELS_NATIVE);
             player.play();
             player.setLoopState(OF_LOOP_NONE);
             
-#endif
+#       endif
             
         } else {
             error->setCurrentError("vidPlayer : playIndex : error Loading file");

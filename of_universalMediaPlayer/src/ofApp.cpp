@@ -55,66 +55,13 @@ void ofApp::update(){
     if(video->getSize() == 0){
         //PLAYLIST IS EMPTY, SCAN
         if(usbKeyUse){
-            
-            ofDirectory folder;
-            string rootDir;
-            int usbKeyIndex;
-            #ifdef __arm__
-            rootdir = "/media/pi";
-            usbKeyIndex = 0;
-            #else
-            rootDir ="/Volumes";
-            usbKeyIndex = 1;
-            #endif
-            
-            folder.open(rootDir);
-            folder.listDir();
-            
-            if(folder.listDir()>usbKeyIndex){
-                string name = "";
-                string usbKeyName = "";
-                for(int i = 0; i < folder.size(); i++){
-                    cout << "USB NAME : "+folder.getPath(i)+"\n";
-                    name = folder.getPath(i);
-                    // >1 to avoid "/" folder is osx
-                    if(name.size()>1){
-                        usbKeyName = name;
-                        break;
-                    }
-                }
-                if(usbKeyName.size()>0){
-                    usbKeyInserted = true;
-                    folder.open(usbKeyName);
-                    folder.allowExt("mp4");
-                    folder.allowExt("mov");
-                    folder.allowExt("MOV");
-                    folder.listDir();
-                    bool isExist = folder.exists();
-                    bool isReadable = folder.canRead();
-                    folder.getSorted();
-                    string originalDir = folder.getOriginalDirectory();
-
-                    
-                     cout << "NBFILE : "+ofToString(folder.listDir())+"\n";
-                    for(int i = 0; i < folder.listDir(); i++){
-                        cout << "FILE : "+folder.getPath(i)+"\n";
-                    }
-                }
-            }
-            else
-            {
-            usbKeyInserted = false;
-            }
-            cout << "----------- -------";
-                //cout << "USB NAME : "+usbName+"\n";
-                //folder.open(rootDir+"/"+usbName);
-            
-    }
+            scanVideoFiles();
+        }
         
     }else{
         
         bool endOfFile = video->update();
-        if(endOfFile  ){
+        if(endOfFile){
             if (video->autoNext )
             {
                 error.setCurrentInfo("Update : end of movie - jump next");
@@ -181,7 +128,8 @@ void ofApp::draw(){
     }
     
     //DRAW VIDEO
-    float darkPercentage = message.getAlpha()/255.0f * 100;
+    //float darkPercentage = message.getAlpha()/255.0f * 100;
+    float darkPercentage = 0;
     video->draw(darkPercentage);
     
     // DRAW IMAGE OF USB KEY
@@ -216,7 +164,19 @@ void ofApp::draw(){
 //                      KEY PRESSED
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    
+    switch(key){
+            
+        case 'p': video->doPrintPlaylist = !video->doPrintPlaylist;
+            break;
+        case 'f': video->doPrintFrame = !video->doPrintFrame;
+            break;
+        case 't': video->time.doPrintTimeCode = !video->time.doPrintTimeCode;
+            break;
+            
+            
+            
+    }
 }
 
 //--------------------------------------------------------------
@@ -267,6 +227,12 @@ void ofApp::processOscMessage(ofxOscMessage m){
                 float volume = m.getArgAsFloat(0);
                 video->setVolume( volume);
                 toPrint +="set volume: "+ofToString(volume);
+            }
+            //Vertical Flip
+            if(splitted[1] == "vflip"){
+                int vflip = m.getArgAsFloat(0);
+                video->flipV = (vflip > 0);
+                toPrint +="set Vflip: "+ofToString(vflip);
             }
             //LOAD A FILE -- and add to playlist -- and play it
             if(splitted[1] == "load"){
@@ -432,4 +398,62 @@ void ofApp::processOscMessage(ofxOscMessage m){
     }
     
 
+}
+
+//--------------------------------------------------------------
+//                 SCAN VIDEO FILES ON USB KEY
+//--------------------------------------------------------------
+void ofApp::scanVideoFiles(){
+    
+    ofDirectory folder;
+    string rootDir;
+    int usbKeyIndex;
+    #ifdef __arm__
+    rootdir = "/media/pi";
+    usbKeyIndex = 0;
+    #else
+    rootDir ="/Volumes";
+    usbKeyIndex = 1;
+    #endif
+    
+    folder.open(rootDir);
+    folder.listDir();
+    
+    if(folder.listDir()>usbKeyIndex){
+        string name = "";
+        string usbKeyName = "";
+        for(int i = 0; i < folder.size(); i++){
+            cout << "USB NAME : "+folder.getPath(i)+"\n";
+            name = folder.getPath(i);
+            // >1 to avoid "/" folder is osx
+            if(name.size()>1){
+                usbKeyName = name;
+                break;
+            }
+        }
+        if(usbKeyName.size()>0){
+            usbKeyInserted = true;
+            folder.open(usbKeyName);
+            folder.allowExt("mp4");
+            folder.allowExt("mov");
+            folder.allowExt("MOV");
+            folder.listDir();
+            bool isExist = folder.exists();
+            for(int i = 0; i < folder.listDir(); i++){
+                cout << "FILE : "+folder.getPath(i)+"\n";
+                if(i==0){
+                    video->loadFile(folder.getPath(i));
+                }
+                else{
+                    video->addFile(folder.getPath(i));
+                }
+            }
+        }
+    }
+    else
+    {
+    usbKeyInserted = false;
+    }
+    
+    
 }

@@ -13,6 +13,7 @@ timeCode::timeCode(){
     
     isEnabled = true;
     isLoaded = false;
+    doPrintTimeCode = false;
     index = 0;
     listOfFrame.clear();
     listOfMemory.clear();
@@ -41,13 +42,20 @@ void timeCode::loadFile(string f){
                 
             }
             else{
-                isLoaded = false;
+                // MISSING ROW OR COLUMNS
+                unload();
             }
             
         }
         else{
-            isLoaded = false;
+            //ERROR LOADING CSV FILE
+            unload();
         }
+        
+    }
+    else{
+        //FILE DOES NOT EXSIT
+        unload();
         
     }
     
@@ -69,11 +77,38 @@ void timeCode::update(int fps){
             }
             else{
                 //END OF CSV FILE , unload it
-                isLoaded = false;
+                unload();
             }
             
         }
         
         
     }
+}
+
+void timeCode::printTimeCode(){
+    
+    string title;
+    if(isLoaded){
+        title = "timeCode : LOADED";
+    }else{
+        title = "timeCode : NOT loaded";
+    }
+    ofDrawBitmapString(title, 20, ofGetHeight()*0.75 - 12);
+    for(int i=0; i<listOfFrame.size(); i++){
+        if(i == index) ofSetColor(ofColor::red);
+        else ofSetColor(255);
+        ofDrawBitmapString(ofToString(i)+") "+ofToString(listOfFrame[i])+ " :: "+ofToString(listOfMemory[i]), 20, ofGetHeight()*0.75 + i*12);
+        
+    }
+    
+}
+
+void timeCode::unload(){
+    
+    isLoaded = false;
+    listOfMemory.clear();
+    listOfFrame.clear();
+    index = 0;
+    
 }

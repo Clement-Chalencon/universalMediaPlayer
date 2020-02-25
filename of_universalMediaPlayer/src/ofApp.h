@@ -21,6 +21,7 @@ class ofApp : public ofBaseApp{
 		void keyPressed(int key);
         void processOscMessage( ofxOscMessage msg);
         void windowResized(ofResizeEventArgs & resize);
+        void scanVideoFiles();
 #if defined(_WIN32)
 #define PLATFORM_NAME "windows" // Windows
 

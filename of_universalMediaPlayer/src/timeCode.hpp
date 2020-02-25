@@ -19,9 +19,12 @@ class timeCode{
     timeCode();
     void loadFile(string name);
     void update(int fps);
+    void printTimeCode();
+    void unload();
     
     bool isEnabled;
     bool isLoaded;
+    bool doPrintTimeCode;
     int index;
     ofxCsv csv;
     vector<int> listOfFrame;

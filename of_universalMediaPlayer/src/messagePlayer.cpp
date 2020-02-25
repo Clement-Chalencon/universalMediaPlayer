@@ -96,8 +96,6 @@ void messagePlayer::clear(){
 //------------------------------------------------
 void messagePlayer::draw(){
     
-
-    
     if(display){
 
         float timeFromFade = ofGetElapsedTimef() - timeToFade;
