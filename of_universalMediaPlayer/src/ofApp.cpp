@@ -261,6 +261,13 @@ void ofApp::processOscMessage(ofxOscMessage m){
                 toPrint +="printPlaylist ";
                 
             }
+            // Print playlist
+            if(splitted[1] == "printTimeCode"){
+                int value = m.getArgAsInt(0);
+                video->time.doPrintTimeCode = !video->time.doPrintTimeCode;
+                toPrint +="printPlaylist ";
+                
+            }
             // Print FPS
             if(splitted[1] == "printFPS"){
                 int value = m.getArgAsInt(0);
