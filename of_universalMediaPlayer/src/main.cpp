@@ -31,7 +31,7 @@ int main( ){
     ofGLESWindowSettings settings;
 #ifndef RADIOLOGIC_OMX
     
-    // settings.setGLESVersion(2);
+    settings.setGLESVersion(2);
 #endif
     
     // SET FULLSCREEN ON RPI
