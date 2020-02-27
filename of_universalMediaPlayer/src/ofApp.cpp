@@ -433,7 +433,7 @@ void ofApp::scanVideoFiles(){
             cout << "USB NAME : "+folder.getPath(i)+"\n";
             name = folder.getPath(i);
             // >1 to avoid "/" folder is osx
-            if(name.size()>1){
+            if(name.size()>1 ){
                 usbKeyName = name;
                 break;
             }
