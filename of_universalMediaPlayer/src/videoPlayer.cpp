@@ -473,6 +473,7 @@ void vidPlayer::playIndex(int i){
             calculateGeometry();
             string csvName = (ofSplitString(name, "."))[0]+".csv";
             time.loadFile(csvName);
+            isPlaying = true;
 #       ifdef RADIOLOGIC_OMX
             player.start();
             player.disableLooping();
