@@ -147,7 +147,7 @@ void vidPlayer::draw( int darkPercentage){
             ofTranslate ( 30, ofGetHeight()-120);
             int st = 0;
             for(auto & c:"Radiologic"){
-                ofDrawBitmapString(ofToString(c),0,st);
+                ofDrawBitmapString(ofToString("_"),0,st);
                 st+=12;
             }
 
@@ -188,7 +188,7 @@ void vidPlayer::draw( int darkPercentage){
         
     }
     if(doPrintFrame){
-         ofDrawBitmapString("actual FRAME "+ofToString(actualFrame), ofGetWidth()*0.70, ofGetHeight()*0.80);
+         ofDrawBitmapString("actual FRAME "+ofToString(actualFrame)+" / "+ofToString(player.getTotalNumFrames()), ofGetWidth()*0.70, ofGetHeight()*0.80);
     }
     
 }

@@ -6,6 +6,22 @@
 
 //========================================================================
 int main( ){
+//       #ifndef TARGET_OPENGLES
+//     static bool inited = false;
+//     if (!inited) {
+//         glewExperimental = GL_TRUE;
+//         GLenum err = glewInit();
+//         if (GLEW_OK != err)
+//         {
+//             /* Problem: glewInit failed, something is seriously wrong. */
+//             ofLogError("ofAppRunner") << "couldn't init GLEW: " << glewGetErrorString(err);
+//             return;
+//         }
+//         ofLogError("ofAppRunnerGlew");
+
+//         inited = true;
+//     }
+// #endif
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN
 	// pass in width and height too:
@@ -15,12 +31,13 @@ int main( ){
     ofGLESWindowSettings settings;
 #ifndef RADIOLOGIC_OMX
     
-    settings.setGLESVersion(2);
+    // settings.setGLESVersion(2);
 #endif
     
     // SET FULLSCREEN ON RPI
     #ifdef __arm__
     settings.windowMode = OF_FULLSCREEN;
+    
     #endif
     // SET WINDOWED ON LAPTOP
     #ifdef __APPLE__
@@ -28,6 +45,12 @@ int main( ){
     #endif
     ofCreateWindow(settings);
 
-	ofRunApp(new ofApp());
+
+    // ofSetupOpenGL(1024,768, OF_WINDOW);         // <-------- setup the GL context
+
+    // this kicks off the running of my app
+    // can be OF_WINDOW or OF_FULLSCREEN
+    // pass in width and height too:
+    ofRunApp( new ofApp());
 
 }

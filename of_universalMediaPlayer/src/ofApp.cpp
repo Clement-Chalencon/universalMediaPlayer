@@ -15,6 +15,8 @@ Playdirectly once the playlist is done
 //                      SETUP
 //--------------------------------------------------------------
 void ofApp::setup(){
+  
+
     notifiedVideoClientState = STOPPED;
     error = errorManager();
     video = new vidPlayer(&error);
