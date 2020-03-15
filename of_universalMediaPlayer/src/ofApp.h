@@ -1,7 +1,7 @@
 #pragma once
 #include "PlatformConfig.h"
 #define OSC_PORT_RECEIVE 12345
-#define OSC_PORT_SEND 4444
+#define OSC_PORT_SEND 7400
 
 #include "ofMain.h"
 #include "videoPlayer.hpp"
@@ -22,6 +22,8 @@ class ofApp : public ofBaseApp{
         void processOscMessage( ofxOscMessage msg);
         void windowResized(ofResizeEventArgs & resize);
         void scanVideoFiles();
+		char scanUsbKeyWin32();
+		string scanUsbKeyUnix();
 #if defined(_WIN32)
 #define PLATFORM_NAME "windows" // Windows
 
@@ -51,6 +53,7 @@ class ofApp : public ofBaseApp{
         ofImage imgNoFile;
         bool usbKeyUse;
         bool usbKeyInserted;
+		string usbFolderName;
     
 		
 };

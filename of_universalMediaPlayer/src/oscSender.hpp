@@ -22,6 +22,7 @@ public:
     int port;
     void send(string ad, int num);
     void send(string ad, string word);
+	void send(string ad, string word, int index);
     void send(string add, float f1, float f2, float f3);
     
     

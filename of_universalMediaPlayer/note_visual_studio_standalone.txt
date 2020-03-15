@@ -1,0 +1,7 @@
+0xc000007b is error when you try to use x64 dlls in x32 application or other way around, so you probably copied wrong dlls. Rebuild fixed this, as it prepared new dlls.
+
+
+Sujet 2.
+
+0xc000007b is error when you try to use x64 dlls in x32 application or other way around, so you probably copied wrong dlls. Rebuild fixed this, as it prepared new dlls.
+

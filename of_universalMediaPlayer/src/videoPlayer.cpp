@@ -276,7 +276,13 @@ void vidPlayer::pause(){
 bool vidPlayer::getIsPlaying(){
 //    #ifdef RADIOLOGIC_OMX
 //#else
-    return player.isPlaying();
+    bool isPlayerPlaying = player.isPlaying();
+	// There is a problem on windows, player.isPlaying() is not working all the time.
+	// but still everything is fine 
+
+	//return isPlayerPlaying;
+	return isPlaying;
+
 //#endif
 
 }
@@ -364,7 +370,9 @@ void vidPlayer::loadFile(string f){
             
             //play directly
             playIndex(playlistIndex);
-           
+
+			// At this point player should be playing
+
             
             
         } else {
@@ -399,14 +407,18 @@ int vidPlayer::addFile(string f){
             //CHECK THAT FILE IS NOT ALREAY ADDED
             int alreadyAdded = -1;
             for (int i = 0; i<playlist.size(); i++){
-                if(f == playlist[i] ) alreadyAdded = i;
+                if(f == playlist[i].path ) alreadyAdded = i;
             }
             
             if(alreadyAdded >= 0){
                 error->setCurrentError("vidPlayer : addFile : File already exist");
                 return alreadyAdded;
             }else{
-                playlist.push_back(f);
+				string name = file.getFileName();
+
+				movie newMov = movie(name, playlist.size(), f);
+				
+				playlist.push_back(newMov);
                 error-> setCurrentInfo("vidPlayer :addFile: "+f+" nb of file : "+ofToString(playlist.size()));
                 return (playlist.size() - 1);
             }
@@ -452,7 +464,7 @@ void vidPlayer::playIndex(int i){
     
     if( i < playlist.size() && i >= 0){
         
-        string name = playlist[i];
+        string name = playlist[i].path;
 
 #     ifdef RADIOLOGIC_OMX
         ofxOMXPlayerSettings settings;
@@ -474,24 +486,33 @@ void vidPlayer::playIndex(int i){
             string csvName = (ofSplitString(name, "."))[0]+".csv";
             time.loadFile(csvName);
             isPlaying = true;
-#       ifdef RADIOLOGIC_OMX
-            player.start();
-            player.disableLooping();
+#			ifdef RADIOLOGIC_OMX
+				player.start();
+				player.disableLooping();
             
-#       else
-            player.setPixelFormat(OF_PIXELS_NATIVE);
-            player.play();
-            player.setLoopState(OF_LOOP_NONE);
+#			else
+				player.setPixelFormat(OF_PIXELS_NATIVE);
+				player.play();
+				// But player.isPlaying() == false on windows
+				// player.isPlaying can't be trusty : use isPlaying instead
+				player.setLoopState(OF_LOOP_NONE);
+
+
+
+
             
 #       endif
             
         } else {
-            error->setCurrentError("vidPlayer : playIndex : error Loading file");
+            // if not loaded
+			error->setCurrentError("vidPlayer : playIndex : error Loading file");
         }
         
     }else{
-        error->setCurrentError("vidPlayer : playIndex : index out of range");
+        // Index out of range
+		error->setCurrentError("vidPlayer : playIndex : index out of range");
     }
+
     
 }
 
@@ -521,9 +542,9 @@ int vidPlayer::getSize(){
 int vidPlayer::isInsidePlaylist(string file){
     
     int index = -1;
-    for( vector<string>::iterator it = playlist.begin(); it<playlist.end(); it++){
+    for( vector<movie>::iterator it = playlist.begin(); it<playlist.end(); it++){
         index ++;
-        if( file == *(it)) return index;
+        if( file == it->path) return index;
         
     }
     return -1;
@@ -539,10 +560,37 @@ void vidPlayer::printPlaylist(){
     for(int i=0; i<playlist.size(); i++){
         if(i == playlistIndex) ofSetColor(ofColor::red);
         else ofSetColor(255);
-        ofDrawBitmapString(ofToString(i)+") "+playlist[i], ofGetWidth()/2, ofGetHeight()*0.75 + i*12);
+        ofDrawBitmapString(ofToString(i)+") "+playlist[i].name, ofGetWidth()/2, ofGetHeight()*0.75 + i*12);
         
     }
     
+}
+
+//------------------------------------------------------
+//PLAYLIST  - SEND OVER OSC
+//------------------------------------------------------
+void vidPlayer::sendOSCPlaylist() {
+
+	for (int i = 0; i < playlist.size(); i++) {
+
+		oscsender->send("/addMovie", playlist[i].name, i);
+		//ofSleepMillis(1); maybe uselfull in term of thousand of files 
+	}
+
+}
+
+
+
+//------------------------------------------------------
+//PLAYLIST  - CLEAR
+//------------------------------------------------------
+void vidPlayer::clearPlaylist() {
+
+	playlist.clear();
+	player.close();
+	isLoaded = false;
+	isPlaying = false;
+
 }
 
 //------------------------------------------------------
@@ -554,10 +602,11 @@ void vidPlayer::calculateGeometry(){
     videoHeight = player.getHeight();
     videoWidth = player.getWidth();
     videoRatio = videoWidth/videoHeight;
-    
+
+	    
     screenWidth = ofGetWidth();
     screenHeight = ofGetHeight();
-    
+
     
     //CONSIDER THAT THE FINAL WIDTH IS THE SCREEN WIDTH
     float originalPlayerW = screenWidth;

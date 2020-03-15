@@ -3,8 +3,6 @@
 /*
  
 TODO GENERALE :
-Lire la clé USB depuis cette application
-Lire les fichiers timecode depuis cette application
 Message ne peut pas baisser la luminosité de la vidéo
 Playdirectly once the playlist is done
 
@@ -24,9 +22,10 @@ void ofApp::setup(){
     message = messagePlayer(&error);
     receiver.setup(OSC_PORT_RECEIVE);
     
-    oscsend = new oscSender("127.0.0.1", OSC_PORT_SEND);
+    oscsend = new oscSender("192.168.1.12", OSC_PORT_SEND);
     
     //UPDATE POINTER
+	video->oscsender = oscsend;
     video->time.oscsender = oscsend;
     
     //HIDE CURSOR
@@ -54,21 +53,34 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-    if(video->getSize() == 0){
+	
+	if(video->getSize() == 0){
         //PLAYLIST IS EMPTY, SCAN
         if(usbKeyUse){
             scanVideoFiles();
         }
         
     }else{
+		// Be sure that the file is accessible
+		ofDirectory folderKey;
+		folderKey.open(usbFolderName);
+		if (folderKey.canRead()) {
+			video->update();
+		}
+		else {
+			//if playlist but not accessible : panic and close all
+			video->clearPlaylist();
+		}
         
-        video->update();
 
     }
     
 
     
     // PAUSE PLAYER WHILE MESSAGE DISPLAYING
+	/*
+		TODO : should be change to : reduce volume instead
+	*/
     if(video->pauseOnMessage)
     {
         if(message.isMessageOnScreen()){
@@ -157,15 +169,18 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
-    switch(key){
+
+
+	switch(key){
             
         case 'p': video->doPrintPlaylist = !video->doPrintPlaylist;
             break;
-        case 'f': video->doPrintFrame = !video->doPrintFrame;
+		case 'f': ofSetFullscreen(true);
             break;
         case 't': video->time.doPrintTimeCode = !video->time.doPrintTimeCode;
             break;
-            
+		default:
+			ofSetFullscreen(false);
             
             
     }
@@ -193,12 +208,19 @@ void ofApp::processOscMessage(ofxOscMessage m){
         if(splitted[0] == "player"){
             toPrint +="player :";
             
-            //PAUSE
+            //PLAY ( after a  pause or stop )
             if(splitted[1] == "play"){
 //                int value = m.getArgAsInt(0);
                 video->play();
                 toPrint +="play";
             }
+
+			//PLAY INDEX
+			if (splitted[1] == "playIndex") {
+				int index = m.getArgAsInt(0);
+				video->playIndex(index);
+				toPrint += "play index";
+			}
             
             // STOP
             if(splitted[1] == "stop"){
@@ -262,6 +284,12 @@ void ofApp::processOscMessage(ofxOscMessage m){
                 toPrint +="printPlaylist ";
                 
             }
+			// Send back playslit - refresh playlist
+			if (splitted[1] == "refreshPlaylist") {
+				video->sendOSCPlaylist();
+				toPrint += " refresh osc Playlist ";
+
+			}
             // Print playlist
             if(splitted[1] == "printTimeCode"){
                 int value = m.getArgAsInt(0);
@@ -412,61 +440,146 @@ void ofApp::processOscMessage(ofxOscMessage m){
 //--------------------------------------------------------------
 void ofApp::scanVideoFiles(){
     
-    ofDirectory folder;
-    string rootDir;
-    int usbKeyIndex;
-    #ifdef __arm__
-    rootDir = "/media/pi";
-    usbKeyIndex = 0;
-    #else
-    rootDir ="/Volumes";
-    usbKeyIndex = 1;
-    #endif
-    
-    folder.open(rootDir);
-    folder.listDir();
-    
-    if(folder.listDir()>usbKeyIndex){
-        string name = "";
-        string usbKeyName = "";
-        for(int i = 0; i < folder.size(); i++){
-            cout << "USB NAME : "+folder.getPath(i)+"\n";
-            name = folder.getPath(i);
-            // >1 to avoid "/" folder is osx
-            if(name.size()>1 ){
-                usbKeyName = name;
-                break;
-            }
-        }
-        if(usbKeyName.size()>0){
-            usbKeyInserted = true;
-            ofDirectory folderKey;
-            folderKey.open(usbKeyName);
-            folderKey.allowExt("mp4");
-            folderKey.allowExt("mov");
-            folderKey.allowExt("MOV");
-            ofSleepMillis(400);
+    //ofDirectory folder;
+	bool isFolderExist = false;
+    string rootDir; // This is the root of usb key folder ( unix only );
 
-            if( !folderKey.canRead()){
-                usbKeyInserted = false;
-                return;
-            }
-            folderKey.listDir();
-            for(int i = 0; i < folderKey.listDir(); i++){
-                cout << "FILE : "+folderKey.getPath(i)+"\n";
-                if(i==0){
-                    video->loadFile(folderKey.getPath(i));
-                }
-                else{
-                    video->addFile(folderKey.getPath(i));
-                }
-            }
-        }
-    }
-    else
-    {
-    usbKeyInserted = false;
-    }
+    #ifdef __arm__
+		usbFolderName = scanUsbKeyWin32();
+		if (usbFolderName.size() > 0) isFolderExist = true;
+    #endif
+	#ifdef _APPLE_
+		usbFolderName = scanUsbKeyWin32();
+		if (usbFolderName.size() > 0) isFolderExist = true;
+    #endif
+	#ifdef _WIN32
+	char letter = scanUsbKeyWin32();
+	if (letter > 0) {
+		usbFolderName = ofToString(letter) + ":\\";
+		isFolderExist = true;
+	}
+	#endif
+    
+	if (isFolderExist) {
+		ofDirectory folderKey;
+		folderKey.open(usbFolderName);
+
+
+		if (!folderKey.canRead()) {
+			usbKeyInserted = false;
+			return;
+		}
+		else {
+			usbKeyInserted = true;
+			folderKey.allowExt("mp4");
+			folderKey.allowExt("mov");
+			folderKey.allowExt("MOV");
+			folderKey.listDir();
+			for (int i = 0; i < folderKey.listDir(); i++) {
+				cout << "FILE : " + folderKey.getPath(i) + "\n";
+				if (i == 0) {
+					video->loadFile(folderKey.getPath(i));
+				}
+				else {
+					video->addFile(folderKey.getPath(i));
+				}
+			}
+		}
+
+
+	}
+	else {
+		//probably first check if usbKeyInserted is true : 
+		// this means that the key was and is not anymore
+		// probably better to remove playlist and stop everything
+		usbKeyInserted = false;
+		usbFolderName = "";
+		
+	}
     
     
+}
+
+
+
+
+char ofApp::scanUsbKeyWin32()
+{
+
+	int i;
+
+	UINT test;
+	LPCSTR drive2[13] = { "A:\\", "B:\\", "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "H:\\","I:\\", "J:\\", "K:\\", "L:\\" };
+
+
+	char isFound = 0;
+	for (i = 0; i < 12; i++)
+	{
+
+		test = GetDriveType(drive2[i]);
+
+		switch (test)
+		{
+
+
+		case 2: 
+			cout << "Drive " + ofToString(drive2[i]) + " is type " + ofToString(test)+" -Removable.\n";
+			isFound = (char) 'A' + i;
+			break;
+
+
+		default: printf("This is not a removable drive \n");
+
+		}
+
+	}
+
+	if (isFound > 0) {
+		cout <<  "cle usb trouvée : "+ofToString(isFound)+" \n";
+	}
+
+	return isFound;
+}
+
+
+
+
+
+string ofApp::scanUsbKeyUnix() {
+
+
+	ofDirectory folder;
+	bool isFolderExist = false;
+	string rootDir;
+	int usbKeyIndex;
+#ifdef __arm__
+		rootDir = "/media/pi";
+		usbKeyIndex = 0;
+#endif
+#ifdef _APPLE_
+		rootDir = "/Volumes";
+		usbKeyIndex = 1;
+#endif
+
+	string usbKeyName = "";
+	folder.open(rootDir);
+	folder.listDir();
+
+	if (folder.listDir() > usbKeyIndex) {
+		string name = "";
+
+		for (int i = 0; i < folder.size(); i++) {
+			cout << "USB NAME : " + folder.getPath(i) + "\n";
+			name = folder.getPath(i);
+			// >1 to avoid "/" folder is osx
+			if (name.size() > 1) {
+				usbKeyName = name;
+				isFolderExist = true;
+				break;
+			}
+		}
+	}
+
+	return usbKeyName;
+
 }

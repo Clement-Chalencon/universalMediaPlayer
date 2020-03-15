@@ -18,6 +18,8 @@
 #include "ofxOMXPlayer.h"
 #endif
 
+class movie;
+
 class vidPlayer{
     
 public :
@@ -57,6 +59,8 @@ public :
     int getCurrentIndex();
     int getSize();
     int isInsidePlaylist(string file);  //Return index in playlist or -1 if does not
+	void sendOSCPlaylist();
+	void clearPlaylist();
     
     //GEOMETRY
     void calculateGeometry();
@@ -70,6 +74,9 @@ public :
     //TIMECODE
     int actualFrame;
     timeCode time;
+
+	//OSC SENDER
+	oscSender* oscsender;
     
     
     //PRINT EXTRA STUFF
@@ -105,7 +112,7 @@ private:
     bool isPlaying;
     bool isLoaded;
     int minBrightness;   //Percentage 0% - 100%
-    vector<string> playlist;
+    vector<movie> playlist;
     int playlistIndex;
     
     
@@ -115,3 +122,22 @@ private:
 };
 
 #endif /* videoPlayer_hpp */
+
+
+
+
+
+class movie {
+public:
+	movie() {};
+	movie(string _name, int _index, string _path) {
+		name = _name;
+		index = _index;
+		path = _path;
+		duration = ofRandomf() * 160;
+	};
+	string name;
+	int index;
+	string path;
+	float duration;
+};

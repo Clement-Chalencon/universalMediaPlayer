@@ -39,10 +39,13 @@ int main( ){
     settings.windowMode = OF_FULLSCREEN;
     
     #endif
-    // SET WINDOWED ON LAPTOP
+    // SET WINDOWED ON MAC
     #ifdef __APPLE__
     settings.windowMode = OF_WINDOW;
     #endif
+	#ifdef _WIN32
+	settings.windowMode = OF_WINDOW;
+	#endif
     ofCreateWindow(settings);
 
 
