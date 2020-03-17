@@ -77,6 +77,11 @@ void vidPlayer::update(){
     if(player.isLoaded()){
         player.update();
         actualFrame = player.getCurrentFrame();
+        //send osc message percentage timeline
+        if(actualFrame%25==0){
+            float percentage = actualFrame * 100 /(1.0f * player.getTotalNumFrames()) ;
+            oscsender->send("/playPercentage", int(percentage));
+        }
         endOfFile =  player.getIsMovieDone();
     }
     else{
@@ -486,6 +491,8 @@ void vidPlayer::playIndex(int i){
             string csvName = (ofSplitString(name, "."))[0]+".csv";
             time.loadFile(csvName);
             isPlaying = true;
+            playlistIndex = i;
+            oscsender->send("/playIndex", i);
 #			ifdef RADIOLOGIC_OMX
 				player.start();
 				player.disableLooping();

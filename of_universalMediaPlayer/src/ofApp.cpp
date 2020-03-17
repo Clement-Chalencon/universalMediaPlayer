@@ -22,7 +22,7 @@ void ofApp::setup(){
     message = messagePlayer(&error);
     receiver.setup(OSC_PORT_RECEIVE);
     
-    oscsend = new oscSender("192.168.1.12", OSC_PORT_SEND);
+    oscsend = new oscSender("127.0.0.1", OSC_PORT_SEND);
     
     //UPDATE POINTER
 	video->oscsender = oscsend;
@@ -445,11 +445,11 @@ void ofApp::scanVideoFiles(){
     string rootDir; // This is the root of usb key folder ( unix only );
 
     #ifdef __arm__
-		usbFolderName = scanUsbKeyWin32();
+		usbFolderName = scanUsbKeyUnix();
 		if (usbFolderName.size() > 0) isFolderExist = true;
     #endif
-	#ifdef _APPLE_
-		usbFolderName = scanUsbKeyWin32();
+	#ifdef  __APPLE__
+		usbFolderName = scanUsbKeyUnix();
 		if (usbFolderName.size() > 0) isFolderExist = true;
     #endif
 	#ifdef _WIN32
@@ -505,6 +505,9 @@ void ofApp::scanVideoFiles(){
 
 char ofApp::scanUsbKeyWin32()
 {
+    
+    char isFound = 0;
+#   ifdef _WIN32
 
 	int i;
 
@@ -512,7 +515,7 @@ char ofApp::scanUsbKeyWin32()
 	LPCSTR drive2[13] = { "A:\\", "B:\\", "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "H:\\","I:\\", "J:\\", "K:\\", "L:\\" };
 
 
-	char isFound = 0;
+	
 	for (i = 0; i < 12; i++)
 	{
 
@@ -537,8 +540,9 @@ char ofApp::scanUsbKeyWin32()
 	if (isFound > 0) {
 		cout <<  "cle usb trouvée : "+ofToString(isFound)+" \n";
 	}
-
+#   endif
 	return isFound;
+    
 }
 
 
@@ -556,7 +560,7 @@ string ofApp::scanUsbKeyUnix() {
 		rootDir = "/media/pi";
 		usbKeyIndex = 0;
 #endif
-#ifdef _APPLE_
+#ifdef  __APPLE__
 		rootDir = "/Volumes";
 		usbKeyIndex = 1;
 #endif
